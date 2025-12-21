@@ -7,6 +7,9 @@ from app.api.deps import CurrentUser
 from app.core.config import UPLOAD_DIR, ALLOWED_EXTENSIONS
 from app.schemas.documents import DocumentCreate
 import app.crud.documents as documents_crud
+from google import genai
+from google.genai import types
+from app.core.config import GEMINI_API_KEY, MODEL_NAME, SUMMARY_SYSTEM_PROMPT
 
 router = APIRouter()
 
@@ -16,7 +19,7 @@ async def upload_document(
     file: UploadFile = File(...)
 ):
     """
-    Upload a document (PDF or DOCX) to the server.
+    Upload a document (PDF) to the server.
     """
     # Create upload dir if it doesn't exist
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -25,7 +28,7 @@ async def upload_document(
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file type. Only PDF and DOCX are allowed."
+            detail="Invalid file type. Only PDF are allowed."
         )
     
     # Generate unique ID
@@ -80,3 +83,59 @@ async def download_document(current_user: CurrentUser, doc_id: str):
     if document:
         return FileResponse(doc_path, filename=document.filename)
     return FileResponse(doc_path)
+
+
+@router.post("/documents/{doc_id}/summary")
+async def generate_summary(current_user: CurrentUser, doc_id: str):
+    """
+    Generate a summary for a document using Gemini.
+    If summary exists in DB, return it.
+    Otherwise, call Gemini API, save to DB, and return it.
+    """
+    # Check if document exists
+    document = documents_crud.get_document(doc_id, current_user.username)
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+            
+    # Return existing summary if available
+    if document.summary:
+        return document
+    
+    if not GEMINI_API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="GEMINI_API_KEY is not set"
+        )
+        
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    
+    # Get file path
+    doc_path = documents_crud.get_document_path(doc_id, current_user.username)
+    if not doc_path:
+         raise HTTPException(status_code=404, detail="File path not found")
+         
+    try:
+        uploaded_file = client.files.upload(file=doc_path)
+        response = client.models.generate_content(
+            model=MODEL_NAME,
+            contents=[SUMMARY_SYSTEM_PROMPT, uploaded_file],
+            config=types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(thinking_budget=0)
+            )
+        )
+        
+        generated_text = response.text
+        
+        documents_crud.update_document_summary(doc_id, current_user.username, generated_text)
+        document.summary = generated_text
+        return document
+        
+    except Exception as e:
+        print(f"Error generating summary: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate summary: {str(e)}"
+        )

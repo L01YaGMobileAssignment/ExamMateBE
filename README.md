@@ -12,9 +12,16 @@ This is the backend for the Mobile Development course.
 uv sync
 ```
 
+# Initialize database
+```bash
+python -m app.db.init_db
+```
+
 # Run
 ```bash
 .venv\Scripts\activate
 
 uvicorn main:app --reload
 ```
+
+Go to http://127.0.0.1:8000/docs for testing.

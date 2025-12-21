@@ -5,8 +5,20 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core import config, security
 from app.crud import user as user_crud
 from app.schemas.token import Token
+from app.schemas.user import UserCreate, User
 
 router = APIRouter()
+
+@router.post("/register", response_model=User)
+async def register_user(user_in: UserCreate):
+    user = user_crud.get_user(user_in.username)
+    if user:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this username already exists in the system.",
+        )
+    user = user_crud.create_user(user_in)
+    return user
 
 @router.post("/token")
 async def login_for_access_token(

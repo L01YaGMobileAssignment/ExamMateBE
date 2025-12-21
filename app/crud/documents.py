@@ -41,3 +41,13 @@ def get_document_path(doc_id: str, owner: str) -> str | None:
         if row:
             return row["file_path"]
         return None
+
+def update_document_summary(doc_id: str, owner: str, summary: str):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE documents
+            SET summary = ?
+            WHERE id = ? AND owner = ?
+        """, (summary, doc_id, owner))
+        conn.commit()

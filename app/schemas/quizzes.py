@@ -12,3 +12,15 @@ class Quiz(BaseModel):
     owned_by: str
     quiz_title: str
     questions: list[QuizQuestion]
+
+class GeneratedQuestion(BaseModel):
+    question: str
+    options: list[str]
+    answer_index: int
+
+class GeneratedQuiz(BaseModel):
+    title: str
+    questions: list[GeneratedQuestion]
+
+class QuizGenerationRequest(BaseModel):
+    document_id: str

@@ -1,5 +1,6 @@
 import json
-from app.schemas.quizzes import Quiz
+import uuid
+from app.schemas.quizzes import Quiz, GeneratedQuiz
 from app.schemas.user import User
 from app.db.database import get_db_connection
 
@@ -50,3 +51,43 @@ def get_quiz(quiz_id: str, current_user: User):
         quiz_data["questions"] = questions
         return Quiz(**quiz_data)
     return None
+
+def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
+    quiz_id = str(uuid.uuid4())
+    access = "private"
+    
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO quizzes (quiz_id, owned_by, access, quiz_title) VALUES (?, ?, ?, ?)",
+                       (quiz_id, owner, access, quiz_data.title))
+        
+        questions = []
+        for q in quiz_data.questions:
+            q_id = str(uuid.uuid4())
+            if 0 <= q.answer_index < len(q.options):
+                 correct_answer = q.options[q.answer_index]
+            else:
+                 correct_answer = "" 
+            
+            cursor.execute("""
+                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (quiz_id, q_id, q.question, json.dumps(q.options), q.answer_index, correct_answer))
+            
+            questions.append({
+                "id": q_id,
+                "question": q.question,
+                "options": q.options,
+                "answer_index": q.answer_index,
+                "correct_answer": correct_answer
+            })
+        
+        conn.commit()
+    
+    return Quiz(
+        quiz_id=quiz_id,
+        owned_by=owner,
+        quiz_title=quiz_data.title,
+        questions=questions
+    )
+

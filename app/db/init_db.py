@@ -61,6 +61,7 @@ def create_tables(conn):
                 filename TEXT,
                 file_path TEXT,
                 owner TEXT,
+                summary TEXT,
                 FOREIGN KEY (owner) REFERENCES users (username)
             );
         """)
