@@ -15,7 +15,10 @@ async def get_quizzes(current_user: CurrentUser):
 
 @router.get("/quizzes/{quiz_id}", response_model=Quiz)
 async def get_quiz(current_user: CurrentUser, quiz_id: str):
-    return quizzes_crud.get_quiz(quiz_id, current_user)
+    quiz = quizzes_crud.get_quiz(quiz_id, current_user)
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    return quiz
 
 @router.post("/quizzes/generate", response_model=Quiz)
 async def generate_quiz(current_user: CurrentUser, request: QuizGenerationRequest):
