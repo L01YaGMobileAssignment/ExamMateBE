@@ -14,3 +14,7 @@ wheels/
 
 # Temp files
 temp.*
+
+# Database
+exam_mate.db
+/user_upload
