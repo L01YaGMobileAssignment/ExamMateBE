@@ -132,3 +132,17 @@ async def generate_summary(current_user: CurrentUser, doc_id: str):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate summary: {str(e)}"
         )
+
+@router.delete("/documents/{doc_id}")
+async def delete_document(current_user: CurrentUser, doc_id: str):
+    """
+    Soft delete (disable) a document from the server.
+    """
+    document = documents_crud.get_document(doc_id, current_user.username)
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    documents_crud.disable_document(doc_id, current_user.username)
+    return {"message": "Document deleted successfully."}

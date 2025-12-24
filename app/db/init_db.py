@@ -67,6 +67,7 @@ def create_tables(conn):
                 owner TEXT,
                 summary TEXT,
                 created_at INTEGER,
+                disabled BOOLEAN,
                 FOREIGN KEY (owner) REFERENCES users (username)
             );
         """)
