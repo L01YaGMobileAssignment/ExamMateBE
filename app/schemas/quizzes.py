@@ -6,12 +6,14 @@ class QuizQuestion(BaseModel):
     options: list[str]
     answer_index: int
     correct_answer: str
+    created_at: int | None = None
 
 class Quiz(BaseModel):
     quiz_id: str
     owned_by: str
     quiz_title: str
     questions: list[QuizQuestion]
+    created_at: int | None = None
 
 class GeneratedQuestion(BaseModel):
     question: str

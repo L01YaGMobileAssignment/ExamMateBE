@@ -1,15 +1,17 @@
 from app.schemas.documents import DocumentCreate
 from app.db.database import get_db_connection
+import time
 
 def create_document(doc_id: str, filename: str, file_path: str, owner: str) -> DocumentCreate:
+    current_time = int(time.time())
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            INSERT INTO documents (id, filename, file_path, owner)
-            VALUES (?, ?, ?, ?)
-        """, (doc_id, filename, file_path, owner))
+            INSERT INTO documents (id, filename, file_path, owner, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """, (doc_id, filename, file_path, owner, current_time))
         conn.commit()
-    return DocumentCreate(id=doc_id, filename=filename, owner=owner)
+    return DocumentCreate(id=doc_id, filename=filename, owner=owner, created_at=current_time)
 
 def get_documents(owner: str) -> list[DocumentCreate]:
     with get_db_connection() as conn:

@@ -1,5 +1,6 @@
 import json
 import uuid
+import time
 from app.schemas.quizzes import Quiz, GeneratedQuiz
 from app.schemas.user import User
 from app.db.database import get_db_connection
@@ -55,11 +56,12 @@ def get_quiz(quiz_id: str, current_user: User):
 def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
     quiz_id = str(uuid.uuid4())
     access = "private"
+    current_time = int(time.time())
     
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO quizzes (quiz_id, owned_by, access, quiz_title) VALUES (?, ?, ?, ?)",
-                       (quiz_id, owner, access, quiz_data.title))
+        cursor.execute("INSERT INTO quizzes (quiz_id, owned_by, access, quiz_title, created_at) VALUES (?, ?, ?, ?, ?)",
+                       (quiz_id, owner, access, quiz_data.title, current_time))
         
         questions = []
         for q in quiz_data.questions:
@@ -70,16 +72,17 @@ def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
                  correct_answer = "" 
             
             cursor.execute("""
-                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (quiz_id, q_id, q.question, json.dumps(q.options), q.answer_index, correct_answer))
+                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (quiz_id, q_id, q.question, json.dumps(q.options), q.answer_index, correct_answer, current_time))
             
             questions.append({
                 "id": q_id,
                 "question": q.question,
                 "options": q.options,
                 "answer_index": q.answer_index,
-                "correct_answer": correct_answer
+                "correct_answer": correct_answer,
+                "created_at": current_time
             })
         
         conn.commit()
@@ -88,6 +91,7 @@ def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
         quiz_id=quiz_id,
         owned_by=owner,
         quiz_title=quiz_data.title,
-        questions=questions
+        questions=questions,
+        created_at=current_time
     )
 

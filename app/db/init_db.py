@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import os
+import time
 from app.db.fake_db import fake_users_db, fake_quizzes_db
 
 DB_FILE = "exam_mate.db"
@@ -25,7 +26,8 @@ def create_tables(conn):
                 full_name TEXT,
                 email TEXT,
                 hashed_password TEXT,
-                disabled BOOLEAN
+                disabled BOOLEAN,
+                created_at INTEGER
             );
         """)
         
@@ -36,6 +38,7 @@ def create_tables(conn):
                 owned_by TEXT,
                 access TEXT,
                 quiz_title TEXT,
+                created_at INTEGER,
                 FOREIGN KEY (owned_by) REFERENCES users (username)
             );
         """)
@@ -50,6 +53,7 @@ def create_tables(conn):
                 options TEXT,
                 answer_index INTEGER,
                 correct_answer TEXT,
+                created_at INTEGER,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes (quiz_id)
             );
         """)
@@ -62,6 +66,7 @@ def create_tables(conn):
                 file_path TEXT,
                 owner TEXT,
                 summary TEXT,
+                created_at INTEGER,
                 FOREIGN KEY (owner) REFERENCES users (username)
             );
         """)
@@ -72,18 +77,20 @@ def create_tables(conn):
 
 def insert_data(conn):
     cursor = conn.cursor()
+    current_time = int(time.time())
     
     # Insert users
     for username, user_data in fake_users_db.items():
         cursor.execute("""
-            INSERT OR IGNORE INTO users (username, full_name, email, hashed_password, disabled)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT OR IGNORE INTO users (username, full_name, email, hashed_password, disabled, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (
             user_data["username"],
             user_data.get("full_name"),
             user_data.get("email"),
             user_data.get("hashed_password"),
-            user_data.get("disabled")
+            user_data.get("disabled"),
+            current_time
         ))
         
     # Handle implicit users in quizzes (e.g. 'notjohndoe')
@@ -94,34 +101,36 @@ def insert_data(conn):
             # Insert a placeholder user
             print(f"Adding implicit user: {owner}")
             cursor.execute("""
-                INSERT OR IGNORE INTO users (username, full_name, email, hashed_password, disabled)
-                VALUES (?, ?, ?, ?, ?)
-            """, (owner, owner, None, "placeholder", False))
+                INSERT OR IGNORE INTO users (username, full_name, email, hashed_password, disabled, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (owner, owner, None, "placeholder", False, current_time))
             existing_users.add(owner)
 
     # Insert quizzes and questions
     for quiz in fake_quizzes_db:
         cursor.execute("""
-            INSERT OR IGNORE INTO quizzes (quiz_id, owned_by, access, quiz_title)
-            VALUES (?, ?, ?, ?)
+            INSERT OR IGNORE INTO quizzes (quiz_id, owned_by, access, quiz_title, created_at)
+            VALUES (?, ?, ?, ?, ?)
         """, (
             quiz["quiz_id"],
             quiz["owned_by"],
             quiz["access"],
-            quiz["quiz_title"]
+            quiz["quiz_title"],
+            current_time
         ))
         
         for q in quiz["questions"]:
             cursor.execute("""
-                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer)
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 quiz["quiz_id"],
                 q["id"],
                 q["question"],
                 json.dumps(q["options"]),
                 q["answer_index"],
-                q["correct_answer"]
+                q["correct_answer"],
+                current_time
             ))
             
     conn.commit()
@@ -130,8 +139,13 @@ def insert_data(conn):
 def main():
     if os.path.exists(DB_FILE):
         print("Database file exists. Removing...")
-        os.remove(DB_FILE)
-        print("Database file removed.")
+        try:
+            os.remove(DB_FILE)
+            print("Database file removed.")
+        except PermissionError:
+            print(f"Error: Could not remove {DB_FILE}. It might be in use.")
+            return
+
     conn = create_connection()
     if conn:
         create_tables(conn)

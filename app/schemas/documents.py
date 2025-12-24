@@ -6,3 +6,4 @@ class DocumentCreate(BaseModel):
     filename: str
     owner: str
     summary: str | None = None
+    created_at: int | None = None

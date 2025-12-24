@@ -1,6 +1,7 @@
 from app.schemas.user import UserInDB, UserCreate
 from app.core.security import verify_password, get_password_hash
 from app.db.database import get_db_connection
+import time
 
 def get_user(username: str):
     with get_db_connection() as conn:
@@ -21,11 +22,12 @@ def authenticate_user(username: str, password: str):
 
 def create_user(user: UserCreate):
     hashed_password = get_password_hash(user.password)
+    current_time = int(time.time())
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (username, email, full_name, hashed_password, disabled) VALUES (?, ?, ?, ?, ?)",
-            (user.username, user.email, user.full_name, hashed_password, False),
+            "INSERT INTO users (username, email, full_name, hashed_password, disabled, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (user.username, user.email, user.full_name, hashed_password, False, current_time),
         )
         conn.commit()
     return get_user(user.username)
