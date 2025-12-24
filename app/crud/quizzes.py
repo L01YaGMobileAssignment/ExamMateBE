@@ -1,11 +1,11 @@
 import json
 import uuid
 import time
-from app.schemas.quizzes import Quiz, GeneratedQuiz
+from app.schemas.quizzes import Quiz, GeneratedQuiz, QuizBase
 from app.schemas.user import User
 from app.db.database import get_db_connection
 
-def get_quizzes(current_user: User):
+def get_quizzes(current_user: User) -> list[QuizBase]:
     quizzes = []
     with get_db_connection() as conn:
         cursor = conn.cursor()
@@ -14,17 +14,7 @@ def get_quizzes(current_user: User):
 
         for quiz_row in quiz_rows:
             quiz_data = dict(quiz_row)
-            # Get questions
-            cursor.execute("SELECT * FROM questions WHERE quiz_id = ?", (quiz_data["quiz_id"],))
-            question_rows = cursor.fetchall()
-            questions = []
-            for q_row in question_rows:
-                q_data = dict(q_row)
-                q_data["options"] = json.loads(q_data["options"])
-                questions.append(q_data)
-            
-            quiz_data["questions"] = questions
-            quizzes.append(Quiz(**quiz_data))
+            quizzes.append(QuizBase(**quiz_data))
     return quizzes
 
 def get_quiz(quiz_id: str, current_user: User):
@@ -94,4 +84,20 @@ def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
         questions=questions,
         created_at=current_time
     )
+
+def search_quizzes(current_user: User, query: str) -> list[QuizBase]:
+    quizzes = []
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        search_query = f"%{query}%"
+        cursor.execute("""
+            SELECT * FROM quizzes 
+            WHERE (owned_by = ? OR access = 'public') AND quiz_title LIKE ?
+        """, (current_user.username, search_query))
+        quiz_rows = cursor.fetchall()
+
+        for quiz_row in quiz_rows:
+            quiz_data = dict(quiz_row)
+            quizzes.append(QuizBase(**quiz_data))
+    return quizzes
 

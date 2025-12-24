@@ -61,6 +61,10 @@ async def upload_document(
 async def get_documents(current_user: CurrentUser):
     return documents_crud.get_documents(current_user.username)
 
+@router.get("/documents/search", response_model=list[DocumentCreate])
+async def search_documents(current_user: CurrentUser, q: str):
+    return documents_crud.search_documents(current_user.username, q)
+
 @router.get("/documents/{doc_id}", response_model=DocumentCreate)
 async def get_document(current_user: CurrentUser, doc_id: str):
     document = documents_crud.get_document(doc_id, current_user.username)

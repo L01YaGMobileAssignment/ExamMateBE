@@ -8,12 +8,14 @@ class QuizQuestion(BaseModel):
     correct_answer: str
     created_at: int | None = None
 
-class Quiz(BaseModel):
+class QuizBase(BaseModel):
     quiz_id: str
     owned_by: str
     quiz_title: str
-    questions: list[QuizQuestion]
     created_at: int | None = None
+
+class Quiz(QuizBase):
+    questions: list[QuizQuestion]
 
 class GeneratedQuestion(BaseModel):
     question: str

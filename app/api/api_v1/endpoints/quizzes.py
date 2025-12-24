@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 import app.crud.quizzes as quizzes_crud
 import app.crud.documents as documents_crud
-from app.schemas.quizzes import Quiz, QuizGenerationRequest, GeneratedQuiz
+from app.schemas.quizzes import Quiz, QuizGenerationRequest, GeneratedQuiz, QuizBase
 from app.api.deps import CurrentUser
 from google import genai
 from google.genai import types
@@ -9,9 +9,13 @@ from app.core.config import GEMINI_API_KEY, MODEL_NAME, QUIZ_SYSTEM_PROMPT
 
 router = APIRouter()
 
-@router.get("/quizzes", response_model=list[Quiz])
+@router.get("/quizzes", response_model=list[QuizBase])
 async def get_quizzes(current_user: CurrentUser):
     return quizzes_crud.get_quizzes(current_user)
+
+@router.get("/quizzes/search", response_model=list[QuizBase])
+async def search_quizzes(current_user: CurrentUser, q: str):
+    return quizzes_crud.search_quizzes(current_user, q)
 
 @router.get("/quizzes/{quiz_id}", response_model=Quiz)
 async def get_quiz(current_user: CurrentUser, quiz_id: str):

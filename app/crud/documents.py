@@ -53,3 +53,14 @@ def update_document_summary(doc_id: str, owner: str, summary: str):
             WHERE id = ? AND owner = ?
         """, (summary, doc_id, owner))
         conn.commit()
+
+def search_documents(owner: str, query: str) -> list[DocumentCreate]:
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        search_query = f"%{query}%"
+        cursor.execute("""
+            SELECT * FROM documents 
+            WHERE owner = ? AND (filename LIKE ? OR summary LIKE ?)
+        """, (owner, search_query, search_query))
+        documents = cursor.fetchall()
+        return [DocumentCreate(**doc) for doc in documents]
