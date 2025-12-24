@@ -7,9 +7,9 @@ from app.api.deps import CurrentUser
 from app.core.config import UPLOAD_DIR, ALLOWED_EXTENSIONS
 from app.schemas.documents import DocumentCreate
 import app.crud.documents as documents_crud
-from google import genai
 from google.genai import types
-from app.core.config import GEMINI_API_KEY, MODEL_NAME, SUMMARY_SYSTEM_PROMPT
+from app.core.config import SUMMARY_SYSTEM_PROMPT
+from app.services.llm import generate_content
 
 router = APIRouter()
 
@@ -108,30 +108,19 @@ async def generate_summary(current_user: CurrentUser, doc_id: str):
     if document.summary:
         return document
     
-    if not GEMINI_API_KEY:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail="GEMINI_API_KEY is not set"
-        )
-        
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    
     # Get file path
     doc_path = documents_crud.get_document_path(doc_id, current_user.username)
     if not doc_path:
          raise HTTPException(status_code=404, detail="File path not found")
          
     try:
-        uploaded_file = client.files.upload(file=doc_path)
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[SUMMARY_SYSTEM_PROMPT, uploaded_file],
-            config=types.GenerateContentConfig(
+        generated_text = generate_content(
+            file_path=doc_path,
+            system_prompt=SUMMARY_SYSTEM_PROMPT,
+            generation_config=types.GenerateContentConfig(
                 thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
         )
-        
-        generated_text = response.text
         
         documents_crud.update_document_summary(doc_id, current_user.username, generated_text)
         document.summary = generated_text

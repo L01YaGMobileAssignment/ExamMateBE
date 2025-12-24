@@ -3,9 +3,8 @@ import app.crud.quizzes as quizzes_crud
 import app.crud.documents as documents_crud
 from app.schemas.quizzes import Quiz, QuizGenerationRequest, GeneratedQuiz, QuizBase
 from app.api.deps import CurrentUser
-from google import genai
-from google.genai import types
-from app.core.config import GEMINI_API_KEY, MODEL_NAME, QUIZ_SYSTEM_PROMPT
+from app.core.config import QUIZ_SYSTEM_PROMPT
+from app.services.llm import generate_content
 
 router = APIRouter()
 
@@ -37,28 +36,20 @@ async def generate_quiz(current_user: CurrentUser, request: QuizGenerationReques
     if not doc_path:
         raise HTTPException(status_code=404, detail="File path not found")
         
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not set")
-         
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    
     try:
-        uploaded_file = client.files.upload(file=doc_path)
-        
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=[QUIZ_SYSTEM_PROMPT, uploaded_file],
-            config={
+        response_text = generate_content(
+            file_path=doc_path,
+            system_prompt=QUIZ_SYSTEM_PROMPT,
+            generation_config={
                 "response_mime_type": "application/json",
                 "response_json_schema": GeneratedQuiz.model_json_schema(),
-            },
+            }
         )
         
-        generated_quiz_data = GeneratedQuiz.model_validate_json(response.text)
+        generated_quiz_data = GeneratedQuiz.model_validate_json(response_text)
         quiz = quizzes_crud.create_quiz(generated_quiz_data, current_user.username)
         return quiz
-        
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Quiz generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process generated quiz: {str(e)}")
