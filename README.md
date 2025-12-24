@@ -21,7 +21,7 @@ python -m app.db.init_db
 ```bash
 .venv\Scripts\activate
 
-uvicorn main:app --reload
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 Go to http://127.0.0.1:8000/docs for testing.
