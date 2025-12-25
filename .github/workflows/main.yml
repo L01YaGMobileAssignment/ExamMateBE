@@ -31,10 +31,10 @@ jobs:
             echo "ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}" >> .env
 
             # 2. Update dependencies
-            /home/ec2-user/.cargo/bin/uv sync
+            uv sync
             
             # 3. Initialize Database
-            /home/ec2-user/.cargo/bin/uv run python -m app.db.init_db
+            uv run python -m app.db.init_db
             
             # 4. Restart Service
             sudo systemctl restart fastapi_app
