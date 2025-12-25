@@ -1,0 +1,40 @@
+name: Deploy FastAPI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ec2-user/app
+            git pull origin main
+            
+            # 1. Re-create .env file from secrets
+            echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+            # echo "GEMINI_API_KEY2=${{ secrets.GEMINI_API_KEY2 }}" >> .env
+            # echo "GEMINI_API_KEY3=${{ secrets.GEMINI_API_KEY3 }}" >> .env
+            echo "MODEL_NAME=${{ secrets.MODEL_NAME }}" >> .env
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+            echo "ALGORITHM=${{ secrets.ALGORITHM }}" >> .env
+            echo "ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}" >> .env
+
+            # 2. Update dependencies
+            /home/ec2-user/.cargo/bin/uv sync
+            
+            # 3. Initialize Database
+            /home/ec2-user/.cargo/bin/uv run python -m app.db.init_db
+            
+            # 4. Restart Service
+            sudo systemctl restart fastapi_app
