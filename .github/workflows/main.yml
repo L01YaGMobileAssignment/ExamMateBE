@@ -21,7 +21,7 @@ jobs:
             cd /home/ec2-user/app
             git pull origin main
             
-            # 1. Re-create .env file from secrets
+            # 1. Re-create .env file from Github secrets
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
             # echo "GEMINI_API_KEY2=${{ secrets.GEMINI_API_KEY2 }}" >> .env
             # echo "GEMINI_API_KEY3=${{ secrets.GEMINI_API_KEY3 }}" >> .env
