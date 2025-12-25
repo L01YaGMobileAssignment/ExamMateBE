@@ -71,6 +71,21 @@ def create_tables(conn):
                 FOREIGN KEY (owner) REFERENCES users (username)
             );
         """)
+
+        # Create schedule table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS schedule (
+                id TEXT PRIMARY KEY,
+                title TEXT,
+                description TEXT,
+                start_date INTEGER,
+                end_date INTEGER,
+                created_at INTEGER,
+                updated_at INTEGER,
+                owned_by TEXT,
+                FOREIGN KEY (owned_by) REFERENCES users (username)
+            );
+        """)
         
         conn.commit()
     except sqlite3.Error as e:
