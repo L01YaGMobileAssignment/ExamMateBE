@@ -3,8 +3,11 @@ import json
 import os
 import time
 from app.db.fake_db import fake_users_db, fake_quizzes_db
+import shutil
+from pathlib import Path
 
 DB_FILE = "exam_mate.db"
+USER_UPLOAD_DIR = Path("user_upload")
 
 def create_connection():
     conn = None
@@ -161,6 +164,10 @@ def main():
         except PermissionError:
             print(f"Error: Could not remove {DB_FILE}. It might be in use.")
             return
+    if USER_UPLOAD_DIR.exists() and USER_UPLOAD_DIR.is_dir():
+        print("User upload directory exists. Removing...")
+        shutil.rmtree(USER_UPLOAD_DIR)
+        print("User upload directory removed.")
 
     conn = create_connection()
     if conn:

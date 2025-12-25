@@ -22,4 +22,4 @@ if os.getenv("GEMINI_API_KEY3"):
 
 MODEL_NAME = os.getenv("MODEL_NAME")
 SUMMARY_SYSTEM_PROMPT = "You are a helpful assistant. Summarize the following document in one paragraph, about 200 words, format it in raw text, do not format it in markdown."
-QUIZ_SYSTEM_PROMPT = "Generate a 5 questions multiple choice quiz based on the following document."
+QUIZ_SYSTEM_PROMPT = "Generate a {num_questions} questions multiple choice quiz based on the following document."

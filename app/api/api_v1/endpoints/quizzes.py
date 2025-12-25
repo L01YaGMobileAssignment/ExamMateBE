@@ -26,6 +26,7 @@ async def get_quiz(current_user: CurrentUser, quiz_id: str):
 @router.post("/quizzes/generate", response_model=Quiz)
 async def generate_quiz(current_user: CurrentUser, request: QuizGenerationRequest):
     document_id = request.document_id
+    num_questions = request.num_questions
     
     # Check document details and access
     document = documents_crud.get_document(document_id, current_user.username)
@@ -39,7 +40,7 @@ async def generate_quiz(current_user: CurrentUser, request: QuizGenerationReques
     try:
         response_text = generate_content(
             file_path=doc_path,
-            system_prompt=QUIZ_SYSTEM_PROMPT,
+            system_prompt=QUIZ_SYSTEM_PROMPT.format(num_questions=num_questions),
             generation_config={
                 "response_mime_type": "application/json",
                 "response_json_schema": GeneratedQuiz.model_json_schema(),
