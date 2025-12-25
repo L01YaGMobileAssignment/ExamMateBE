@@ -28,3 +28,4 @@ class GeneratedQuiz(BaseModel):
 
 class QuizGenerationRequest(BaseModel):
     document_id: str
+    num_questions: int = 10
