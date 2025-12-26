@@ -4,6 +4,7 @@ class UserBase(BaseModel):
     username: str
     email: str | None = None
     full_name: str | None = None
+    language: str = "en"
 
 class User(UserBase):
     created_at: int | None = None

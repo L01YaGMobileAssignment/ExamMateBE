@@ -30,6 +30,7 @@ def create_tables(conn):
                 email TEXT,
                 hashed_password TEXT,
                 disabled BOOLEAN,
+                language TEXT,
                 created_at INTEGER
             );
         """)
