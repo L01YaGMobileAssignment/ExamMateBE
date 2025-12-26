@@ -6,7 +6,7 @@ from jwt.exceptions import InvalidTokenError
 from app.core import config
 from app.crud import user as user_crud
 from app.schemas.token import TokenData
-from app.schemas.user import User
+from app.schemas.user import UserInDB
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -30,11 +30,11 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 async def get_current_active_user(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[UserInDB, Depends(get_current_user)],
 ):
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 # Type alias for easier usage in endpoints
-CurrentUser = Annotated[User, Depends(get_current_active_user)]
+CurrentUser = Annotated[UserInDB, Depends(get_current_active_user)]

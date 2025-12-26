@@ -41,6 +41,7 @@ async def generate_quiz(current_user: CurrentUser, request: QuizGenerationReques
         response_text = generate_content(
             file_path=doc_path,
             system_prompt=QUIZ_SYSTEM_PROMPT.format(num_questions=num_questions),
+            language=current_user.language,
             generation_config={
                 "response_mime_type": "application/json",
                 "response_json_schema": GeneratedQuiz.model_json_schema(),

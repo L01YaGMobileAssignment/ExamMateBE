@@ -117,6 +117,7 @@ async def generate_summary(current_user: CurrentUser, doc_id: str):
         generated_text = generate_content(
             file_path=doc_path,
             system_prompt=SUMMARY_SYSTEM_PROMPT,
+            language=current_user.language,
             generation_config=types.GenerateContentConfig(
                 thinking_config=types.ThinkingConfig(thinking_budget=0)
             )

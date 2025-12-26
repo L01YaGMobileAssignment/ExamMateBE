@@ -33,5 +33,8 @@ QUIZ_SYSTEM_PROMPT = """**Role:** You are an Expert Assessment Specialist. Your 
 3. **Single Best Answer:** Ensure there is only one clearly correct answer based on the document.
 4. **Explanations:** The `why_correct` field must explain *why* the answer is right and, if helpful, why other distractors are wrong, referencing the context, short and concise.
 5. **Indexing:** The `answer_index` must be **0-indexed** (e.g., if the first option is correct, the index is 0).
-6. **Coverage:** Distribute questions across the entire document rather than focusing only on the first few paragraphs.
-"""
+6. **Coverage:** Distribute questions across the entire document rather than focusing only on the first few paragraphs."""
+
+VIETNAMESE_LANGUAGE_PROMPT = "\n\n**All of your responses must be written in Vietnamese.**"
+
+SUPPORTED_LANGUAGES = ["en", "vi"]

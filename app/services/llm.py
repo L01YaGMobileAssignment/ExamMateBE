@@ -1,17 +1,24 @@
 from google import genai
 from google.genai import types
-from app.core.config import GEMINI_API_KEYS, MODEL_NAME
+from app.core.config import GEMINI_API_KEYS, MODEL_NAME, VIETNAMESE_LANGUAGE_PROMPT
 import traceback
+import random
 
 def generate_content(
     file_path: str,
     system_prompt: str,
+    language: str = "en",
     generation_config: types.GenerateContentConfig | dict | None = None
 ) -> str:
     if not GEMINI_API_KEYS:
         raise Exception("GEMINI_API_KEY is not set")
+    
+    random.shuffle(GEMINI_API_KEYS)
 
     last_exception = None
+
+    if language == "vi":
+        system_prompt = system_prompt + VIETNAMESE_LANGUAGE_PROMPT
 
     for i, key in enumerate(GEMINI_API_KEYS):
         try:

@@ -23,8 +23,8 @@ jobs:
             
             # 1. Re-create .env file from Github secrets
             echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
-            # echo "GEMINI_API_KEY2=${{ secrets.GEMINI_API_KEY2 }}" >> .env
-            # echo "GEMINI_API_KEY3=${{ secrets.GEMINI_API_KEY3 }}" >> .env
+            echo "GEMINI_API_KEY2=${{ secrets.GEMINI_API_KEY2 }}" >> .env
+            echo "GEMINI_API_KEY3=${{ secrets.GEMINI_API_KEY3 }}" >> .env
             echo "MODEL_NAME=${{ secrets.MODEL_NAME }}" >> .env
             echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             echo "ALGORITHM=${{ secrets.ALGORITHM }}" >> .env

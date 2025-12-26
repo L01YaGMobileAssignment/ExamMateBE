@@ -26,8 +26,15 @@ def create_user(user: UserCreate):
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users (username, email, full_name, hashed_password, disabled, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (user.username, user.email, user.full_name, hashed_password, False, current_time),
+            "INSERT INTO users (username, email, full_name, hashed_password, language, disabled, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (user.username, user.email, user.full_name, hashed_password, user.language, False, current_time),
         )
         conn.commit()
     return get_user(user.username)
+
+def update_user_language(username: str, language: str):
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET language = ? WHERE username = ?", (language, username))
+        conn.commit()
+    return
