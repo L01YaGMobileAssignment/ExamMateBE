@@ -62,9 +62,9 @@ def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
                  correct_answer = "" 
             
             cursor.execute("""
-                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (quiz_id, q_id, q.question, json.dumps(q.options), q.answer_index, correct_answer, current_time))
+                INSERT INTO questions (quiz_id, id, question, options, answer_index, correct_answer, why_correct, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (quiz_id, q_id, q.question, json.dumps(q.options), q.answer_index, correct_answer, q.why_correct, current_time))
             
             questions.append({
                 "id": q_id,
@@ -72,6 +72,7 @@ def create_quiz(quiz_data: GeneratedQuiz, owner: str) -> Quiz:
                 "options": q.options,
                 "answer_index": q.answer_index,
                 "correct_answer": correct_answer,
+                "why_correct": q.why_correct,
                 "created_at": current_time
             })
         
