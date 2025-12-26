@@ -6,6 +6,7 @@ class QuizQuestion(BaseModel):
     options: list[str]
     answer_index: int
     correct_answer: str
+    why_correct: str
     created_at: int | None = None
 
 class QuizBase(BaseModel):
@@ -21,6 +22,7 @@ class GeneratedQuestion(BaseModel):
     question: str
     options: list[str]
     answer_index: int
+    why_correct: str
 
 class GeneratedQuiz(BaseModel):
     title: str

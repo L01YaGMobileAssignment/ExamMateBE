@@ -56,6 +56,7 @@ def create_tables(conn):
                 options TEXT,
                 answer_index INTEGER,
                 correct_answer TEXT,
+                why_correct TEXT,
                 created_at INTEGER,
                 FOREIGN KEY (quiz_id) REFERENCES quizzes (quiz_id)
             );
@@ -172,7 +173,7 @@ def main():
     conn = create_connection()
     if conn:
         create_tables(conn)
-        insert_data(conn)
+        # insert_data(conn)
         conn.close()
 
 if __name__ == '__main__':
