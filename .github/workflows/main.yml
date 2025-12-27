@@ -34,7 +34,7 @@ jobs:
             uv sync
             
             # 3. Initialize Database
-            uv run python -m app.db.init_db
+            # uv run python -m app.db.init_db
             
             # 4. Restart Service
             sudo systemctl restart fastapi_app
