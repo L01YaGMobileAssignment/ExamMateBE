@@ -37,7 +37,7 @@ QUIZ_SYSTEM_PROMPT = """**Role:** You are an Expert Educational Consultant speci
 * Avoid "All of the above" or "None of the above."
 * Ensure distractors are approximately the same length as the correct answer.
 
-4. **The "why_correct" Field:** This must serve as a teaching tool. Explain the reasoning behind the correct answer and cite the specific concept from the text, short and concise.
+4. **The "why_correct" Field:** This must serve as a teaching tool. Explain the reasoning behind the correct answer and cite the specific concept from the text, and why other options are incorrect, short and concise.
 
 5. **Indexing:** The `answer_index` must be **0-indexed** (e.g., if the first option is correct, the index is 0).
 

@@ -1,6 +1,7 @@
 import shutil
 import uuid
 from pathlib import Path
+from urllib.parse import unquote
 from fastapi import APIRouter, File, UploadFile, HTTPException, status
 from fastapi.responses import FileResponse
 from app.api.deps import CurrentUser
@@ -40,10 +41,13 @@ async def upload_document(
         with file_path.open("wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
+        # Decode filename to preserve UTF-8 characters
+        decoded_filename = unquote(file.filename)
+        
         # Save to DB via CRUD
         doc = documents_crud.create_document(
             doc_id=doc_id, 
-            filename=file.filename, 
+            filename=decoded_filename, 
             file_path=str(file_path), 
             owner=current_user.username
         )
