@@ -102,3 +102,18 @@ def search_quizzes(current_user: User, query: str) -> list[QuizBase]:
             quizzes.append(QuizBase(**quiz_data))
     return quizzes
 
+def delete_quiz(quiz_id: str, owner: str):
+    """Hard delete a quiz and all its associated questions."""
+    with get_db_connection() as conn:
+        cursor = conn.cursor()
+        # Delete associated questions first (foreign key constraint)
+        cursor.execute("""
+            DELETE FROM questions
+            WHERE quiz_id = ?
+        """, (quiz_id,))
+        # Delete the quiz
+        cursor.execute("""
+            DELETE FROM quizzes
+            WHERE quiz_id = ? AND owned_by = ?
+        """, (quiz_id, owner))
+        conn.commit()

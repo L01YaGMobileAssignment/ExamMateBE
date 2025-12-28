@@ -55,3 +55,23 @@ async def generate_quiz(current_user: CurrentUser, request: QuizGenerationReques
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to process generated quiz: {str(e)}")
+
+@router.delete("/quizzes/{quiz_id}")
+async def delete_quiz_endpoint(current_user: CurrentUser, quiz_id: str):
+    """
+    Delete a quiz and all its associated questions from the server.
+    """
+    quiz = quizzes_crud.get_quiz(quiz_id, current_user)
+    if not quiz:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Quiz not found"
+        )
+    # Only allow owner to delete
+    if quiz.owned_by != current_user.username:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this quiz"
+        )
+    quizzes_crud.delete_quiz(quiz_id, current_user.username)
+    return {"message": "Quiz deleted successfully."}
