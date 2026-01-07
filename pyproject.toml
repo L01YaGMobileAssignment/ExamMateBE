@@ -14,3 +14,10 @@ dependencies = [
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
 ]
+
+
+[tool.coverage.run]
+omit = [
+    "app/db/fake_db.py",
+    "app/db/init_db.py",
+]
